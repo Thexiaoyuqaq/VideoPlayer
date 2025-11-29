@@ -1,7 +1,7 @@
 package com.github.NGoedix.videoplayer.util.displayers;
 
-import me.srrapero720.watermedia.api.image.ImageRenderer;
 import net.minecraft.client.Minecraft;
+import org.watermedia.api.image.ImageRenderer;
 
 import java.awt.*;
 

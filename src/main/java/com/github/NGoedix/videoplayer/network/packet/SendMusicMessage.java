@@ -18,9 +18,9 @@ public class SendMusicMessage {
             String url = buffer.readUtf();
             int volume = buffer.readInt();
 
-            ClientHandler.playMusic(client, url, volume);
+            ClientHandler.playMusic(url, volume);
         } else if (type == MusicMessageType.STOP) {
-            ClientHandler.stopMusicIfPlaying(client);
+            ClientHandler.stopMusicIfPlaying();
         }
     }
 

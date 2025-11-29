@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class VideoPlayer implements ModInitializer {
 
+
     public static final CreativeModeTab VIDEO_PLAYER_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, new ResourceLocation("tab"), FabricItemGroup.builder().title(Component.translatable("itemGroup.videoplayer.items"))
             .icon(() -> new ItemStack(ModBlocks.TV_BLOCK)).displayItems((displayContext, entries) -> {
                 entries.accept(new ItemStack(ModBlocks.TV_BLOCK));
