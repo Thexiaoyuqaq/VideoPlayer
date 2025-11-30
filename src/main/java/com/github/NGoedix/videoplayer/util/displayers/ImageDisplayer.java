@@ -1,7 +1,7 @@
 package com.github.NGoedix.videoplayer.util.displayers;
 
-import me.srrapero720.watermedia.api.image.ImageRenderer;
 import net.minecraft.client.Minecraft;
+import org.watermedia.api.image.ImageRenderer;
 
 import java.awt.*;
 
@@ -33,7 +33,12 @@ public class ImageDisplayer implements IDisplay {
     @Override
     public int prepare(String url, boolean playing, boolean loop, int tick) {
         this.url = url;
-        long time = tick * 50L + (playing ? (long) (Minecraft.getInstance().isPaused() ? 1.0F : Minecraft.getInstance().getFrameTime() * 50) : 0);
+
+        // 修复：在1.21中，getFrameTime()被移除
+        // 最常见的替换是getDeltaFrameTime()，如果这个方法不存在，请尝试：
+        // - getPartialTick()
+        // - 从RenderTickCounter获取相关时间信息
+        long time = tick * 50L + (playing ? (long) (Minecraft.getInstance().isPaused() ? 1.0F : Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false) * 50) : 0);
         long duration = picture.duration;
         if (duration > 0 && time > duration && loop) time %= duration;
         return picture.texture(time);

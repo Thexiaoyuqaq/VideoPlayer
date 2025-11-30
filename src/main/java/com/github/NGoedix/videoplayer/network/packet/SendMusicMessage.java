@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class SendMusicMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "send_video");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "send_video");
 
     public static void receive(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buffer, PacketSender sender) {
         MusicMessageType type = buffer.readEnum(MusicMessageType.class);
@@ -18,9 +18,9 @@ public class SendMusicMessage {
             String url = buffer.readUtf();
             int volume = buffer.readInt();
 
-            ClientHandler.playMusic(client, url, volume);
+            ClientHandler.playMusic(url, volume);
         } else if (type == MusicMessageType.STOP) {
-            ClientHandler.stopMusicIfPlaying(client);
+            ClientHandler.stopMusicIfPlaying();
         }
     }
 

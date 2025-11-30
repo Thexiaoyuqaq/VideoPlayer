@@ -1,6 +1,5 @@
 package com.github.NGoedix.videoplayer.client.render;
 
-import com.github.NGoedix.videoplayer.util.math.geo.BoxCorner;
 import com.github.NGoedix.videoplayer.block.custom.TVBlock;
 import com.github.NGoedix.videoplayer.block.entity.custom.TVBlockEntity;
 import com.github.NGoedix.videoplayer.util.displayers.IDisplay;
@@ -8,7 +7,6 @@ import com.github.NGoedix.videoplayer.util.math.geo.*;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import me.srrapero720.watermedia.api.image.ImageAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,9 +16,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
+import org.watermedia.api.image.ImageAPI;
 
 import java.awt.*;
 
@@ -165,17 +163,27 @@ public class TVBlockRenderer implements BlockEntityRenderer<TVBlockEntity> {
         pose.translate(-0.5, -0.5, -0.5);
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+
+        // 在1.21中使用新的BufferBuilder API
         Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder builder = tesselator.getBuilder();
-        builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        BufferBuilder builder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
+
         Matrix4f mat = pose.last().pose();
-        Matrix3f mat3f = pose.last().normal();
+        PoseStack.Pose poseStackPose = pose.last(); // 获取完整的Pose对象
         Vec3i normal = face.facing.normal;
-        for (BoxCorner corner : face.corners)
-            builder.vertex(mat, box.get(corner.x), box.get(corner.y), box.get(corner.z))
-                    .uv(corner.isFacing(face.getTexU()) ? 1 : 0, corner.isFacing(face.getTexV()) ? 1 : 0).color(-1)
-                    .normal(mat3f, normal.getX(), normal.getY(), normal.getZ()).endVertex();
-        tesselator.end();
+
+        // 使用新的vertex方法链
+        for (BoxCorner corner : face.corners) {
+            builder.addVertex(mat, box.get(corner.x), box.get(corner.y), box.get(corner.z))
+                    .setUv(corner.isFacing(face.getTexU()) ? 1 : 0, corner.isFacing(face.getTexV()) ? 1 : 0)
+                    .setColor(-1)
+                    .setNormal(poseStackPose, (float)normal.getX(), (float)normal.getY(), (float)normal.getZ());
+        }
+
+        // 构建并渲染mesh
+        MeshData meshData = builder.buildOrThrow();
+        BufferUploader.drawWithShader(meshData);
+
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         pose.popPose();
 

@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class OpenRadioManagerScreenMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "open_radio_manager");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "open_radio_manager");
 
     public static void receive(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender sender) {
         BlockPos pos = buf.readBlockPos();

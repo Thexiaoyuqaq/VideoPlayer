@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class SendVideoMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "send_video");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "send_video");
 
     public static void receive(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buffer, PacketSender sender) {
         VideoMessageType type = buffer.readEnum(VideoMessageType.class);

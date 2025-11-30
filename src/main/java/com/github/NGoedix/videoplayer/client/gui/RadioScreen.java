@@ -24,13 +24,13 @@ import java.util.Map;
 public class RadioScreen extends Screen {
 
     // Textures
-    private static final ResourceLocation TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/background.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/background.png");
 
-    private static final ResourceLocation PLAY_BUTTON_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/play_button.png");
-    private static final ResourceLocation PLAY_HOVER_BUTTON_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/play_button_hover.png");
+    private static final ResourceLocation PLAY_BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/play_button.png");
+    private static final ResourceLocation PLAY_HOVER_BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/play_button_hover.png");
 
-    private static final ResourceLocation PAUSE_BUTTON_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/pause_button.png");
-    private static final ResourceLocation PAUSE_HOVER_BUTTON_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/pause_button_hover.png");
+    private static final ResourceLocation PAUSE_BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/pause_button.png");
+    private static final ResourceLocation PAUSE_HOVER_BUTTON_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/pause_button_hover.png");
 
     private ScrollingStringList countryList, stationList;
     private EditBox urlField;
@@ -233,11 +233,12 @@ public class RadioScreen extends Screen {
     @Override
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         if (!ready) ready = true;
-        renderBackground(pGuiGraphics);
+        // 修复：添加缺少的参数
+        renderBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 
         RenderSystem.clearColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem._setShaderTexture(0, TEXTURE);
-        pGuiGraphics.blit(TEXTURE, leftPos, topPos, 320, 320, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+        RenderSystem.setShaderTexture(0, TEXTURE);
+        pGuiGraphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
         pGuiGraphics.drawString(font, "Radio Player (by Goedix)", (int) ((width / 2f) - 62), (int) (height / 2f - 100), 0xFFFFFF);
 

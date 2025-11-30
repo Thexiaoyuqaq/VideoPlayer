@@ -7,6 +7,7 @@ import com.github.NGoedix.videoplayer.util.math.geo.Vec3d;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -116,8 +117,8 @@ public abstract class VideoPlayerBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return this.saveWithFullMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
+        return this.saveWithFullMetadata(pRegistries);
     }
 
     @Override
@@ -131,8 +132,8 @@ public abstract class VideoPlayerBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag pTag) {
-        super.saveAdditional(pTag);
+    protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
+        super.saveAdditional(pTag, pRegistries);
 
         pTag.putString("url", url == null ? "" : url);
         pTag.putBoolean("playing", playing);
@@ -141,8 +142,8 @@ public abstract class VideoPlayerBlockEntity extends BlockEntity {
     }
 
     @Override
-    public void load(CompoundTag pTag) {
-        super.load(pTag);
+    protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
+        super.loadAdditional(pTag, pRegistries);
 
         loadFromNBTInternal(pTag);
         loadFromNBT(pTag);

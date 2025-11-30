@@ -2,6 +2,7 @@ package com.github.NGoedix.videoplayer.client.gui.components;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 import java.awt.*;
 import java.util.List;
@@ -25,7 +26,10 @@ public class ScrollingStringList extends ScrollingList<ScrollingStringList.Playe
     }
 
     public String getSelectedText() {
-        return this.getSelected().getText();
+        if (this.getSelected() != null) {
+            return this.getSelected().getText();
+        }
+        return "";
     }
 
     public void setSelected(String entry) {
@@ -52,19 +56,16 @@ public class ScrollingStringList extends ScrollingList<ScrollingStringList.Playe
     }
 
     @Override
-    protected void renderBackground(GuiGraphics pGuiGraphics) {
-        // Render background of the list
-        super.renderBackground(pGuiGraphics);
-
-        // Render background of the slots
+    protected void renderListBackground(GuiGraphics pGuiGraphics) {
+        // 渲染列表背景
         int i = this.getRowLeft();
         int j = this.getRowTop(this.getItemCount());
         int k = this.getRowTop(0);
 
-        // Render container background color gray
+        // 渲染容器背景颜色灰色
         pGuiGraphics.fillGradient(i, k - 4, i + this.getRowWidth(), j + 4, -1072689136, -804253680);
 
-        // Render container border color black
+        // 渲染容器边框颜色黑色
         pGuiGraphics.fillGradient(i, k - 4, i + 1, j + 4, -804253680, -804253680);
     }
 
@@ -83,18 +84,18 @@ public class ScrollingStringList extends ScrollingList<ScrollingStringList.Playe
         }
 
         @Override
-        public boolean mouseClicked(double p_mouseClicked_1_, double p_mouseClicked_3_, int p_mouseClicked_5_) {
+        public boolean mouseClicked(double pMouseX, double pMouseY, int pButton) {
             this.parent.setSelected(this);
             return false;
         }
 
         @Override
-        public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean p_93531_, float pPartialTick) {
+        public void render(GuiGraphics pGuiGraphics, int pIndex, int pTop, int pLeft, int pWidth, int pHeight, int pMouseX, int pMouseY, boolean pHovering, float pPartialTick) {
             Font font = this.parent.minecraft.font;
 
             pGuiGraphics.fillGradient(pLeft, pTop, pLeft + pWidth, pTop + pHeight, -435154928, -435154928);
 
-            // If the mouse is hovering over the slot, render the background
+            // 如果鼠标悬停在槽位上，渲染背景
             if (pMouseX >= parent.getRowLeft() && pMouseX <= parent.getRowRight() && pMouseY >= pTop && pMouseY <= pTop + pHeight) {
                 pGuiGraphics.fillGradient(pLeft, pTop, pLeft + pWidth, pTop + pHeight, -1072689136, -804253680);
             }

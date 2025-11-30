@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 
 public class FrameVideoMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "frame_video");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "frame_video");
 
     public static void receive(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender sender) {
         String url = buf.readUtf();

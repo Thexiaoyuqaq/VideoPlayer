@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class VideoUpdateMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "update_video");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "update_video");
 
     public static void receive(MinecraftServer server, ServerPlayer player, ServerGamePacketListenerImpl handler, FriendlyByteBuf buf, PacketSender responseSender) {
         BlockPos pos = buf.readBlockPos();

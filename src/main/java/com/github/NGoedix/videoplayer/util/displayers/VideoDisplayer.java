@@ -1,16 +1,16 @@
 package com.github.NGoedix.videoplayer.util.displayers;
 
-import com.github.NGoedix.videoplayer.util.cache.TextureCache;
 import com.github.NGoedix.videoplayer.util.math.VideoMathUtil;
 import com.github.NGoedix.videoplayer.util.math.geo.Vec3d;
-import me.lib720.watermod.safety.TryCore;
-import me.srrapero720.watermedia.api.math.MathAPI;
-import me.srrapero720.watermedia.api.player.SyncBasePlayer;
-import me.srrapero720.watermedia.api.player.SyncMusicPlayer;
-import me.srrapero720.watermedia.api.player.SyncVideoPlayer;
 import net.minecraft.client.Minecraft;
+import org.watermedia.api.math.MathAPI;
+import org.watermedia.api.player.videolan.BasePlayer;
+import org.watermedia.api.player.videolan.MusicPlayer;
+import org.watermedia.api.player.videolan.VideoPlayer;
 
 import java.awt.*;
+import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -32,8 +32,21 @@ public class VideoDisplayer implements IDisplay {
     }
 
     private static void pauseIfNecessary(VideoDisplayer display) {
-        if (Minecraft.getInstance().isPaused() && display.player.isPlaying() && (display.player.isLive() || display.player.getDuration() > 0)) {
-            display.player.setPauseMode(true);
+        try {
+            Method isPlayingMethod = display.player.getClass().getMethod("isPlaying");
+            Method isLiveMethod = display.player.getClass().getMethod("isLive");
+            Method getDurationMethod = display.player.getClass().getMethod("getDuration");
+            Method setPauseModeMethod = display.player.getClass().getMethod("setPauseMode", boolean.class);
+
+            boolean isPlaying = (Boolean) isPlayingMethod.invoke(display.player);
+            boolean isLive = (Boolean) isLiveMethod.invoke(display.player);
+            long duration = (Long) getDurationMethod.invoke(display.player);
+
+            if (Minecraft.getInstance().isPaused() && isPlaying && (isLive || duration > 0)) {
+                setPauseModeMethod.invoke(display.player, true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -45,17 +58,13 @@ public class VideoDisplayer implements IDisplay {
     }
 
     public static IDisplay createVideoDisplay(Vec3d pos, String url, float volume, float minDistance, float maxDistance, boolean loop, boolean playing, boolean isOnlyMusic) {
-        TextureCache cache = TextureCache.get(VLC_FAILED);
-
-        return TryCore.withReturn((defaultVar) -> {
-            VideoDisplayer display = new VideoDisplayer(pos, url, volume, minDistance, maxDistance, loop, isOnlyMusic);
-            if (display.player.raw() == null) throw new IllegalStateException("VideoDisplayer uses a broken player");
-            OPEN_DISPLAYS.add(display);
-            return display;
-        }, cache.ready() ? (IDisplay) new ImageDisplayer(cache.getPicture()) : null);
+        VideoDisplayer display = new VideoDisplayer(pos, url, volume, minDistance, maxDistance, loop, isOnlyMusic);
+        if (display.player.raw() == null) throw new IllegalStateException("VideoDisplayer uses a broken player");
+        OPEN_DISPLAYS.add(display);
+        return display;
     }
 
-    public SyncBasePlayer player;
+    public BasePlayer player;
 
     private final Vec3d pos;
     private String url;
@@ -68,26 +77,54 @@ public class VideoDisplayer implements IDisplay {
 
         if (!url.isEmpty()) {
             if (isOnlyMusic) {
-                player = new SyncMusicPlayer();
+                player = new MusicPlayer();
             } else {
-                player = new SyncVideoPlayer(null, Minecraft.getInstance());
+                player = new VideoPlayer(Minecraft.getInstance());
             }
             adjustVolume(volume, minDistance, maxDistance);
-            player.setRepeatMode(loop);
-            player.start(url);
+            setRepeatMode(loop);
+            URI uri = URI.create(url);
+            startPlayer(uri);
+        }
+    }
+
+    private void setRepeatMode(boolean loop) {
+        try {
+            Method setRepeatModeMethod = player.getClass().getMethod("setRepeatMode", boolean.class);
+            setRepeatModeMethod.invoke(player, loop);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startPlayer(URI uri) {
+        try {
+            Method startMethod = player.getClass().getMethod("start", URI.class);
+            startMethod.invoke(player, uri);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     private void adjustVolume(float volume, float minDistance, float maxDistance) {
         volume = pos != null ? calculateVolume(volume, minDistance, maxDistance) : volume;
-        player.setVolume((int) volume);
+        setPlayerVolume((int) volume);
         lastSetVolume = volume;
+    }
+
+    private void setPlayerVolume(int volume) {
+        try {
+            Method setVolumeMethod = player.getClass().getMethod("setVolume", int.class);
+            setVolumeMethod.invoke(player, volume);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private int calculateVolume(float volume, float minDistance, float maxDistance) {
         if (player == null) return 0;
         Minecraft mc = Minecraft.getInstance();
-        float distance = (float) pos.distance(Objects.requireNonNull(Minecraft.getInstance().player).getPosition(mc.isPaused() ? 1.0F : mc.getFrameTime()));
+        float distance = (float) pos.distance(Objects.requireNonNull(Minecraft.getInstance().player).getPosition(mc.isPaused() ? 1.0F : mc.getInstance().getTimer().getGameTimeDeltaPartialTick(false) * 50));
         volume = VideoMathUtil.calculateVolume(volume, distance, minDistance, maxDistance);
         return (int) volume;
     }
@@ -105,25 +142,47 @@ public class VideoDisplayer implements IDisplay {
         this.url = url;
         volume = pos != null ? calculateVolume(volume, minDistance, maxDistance) : volume;
         if (volume != lastSetVolume) {
-            player.setVolume((int) volume);
+            setPlayerVolume((int) volume);
             lastSetVolume = volume;
         }
 
-        if (player.isSafeUse() && player.isValid()) {
-            if (!stream && player.isLive()) stream = true;
+        try {
+            Method isSafeUseMethod = player.getClass().getMethod("isSafeUse");
+            Method isValidMethod = player.getClass().getMethod("isValid");
+            Method isLiveMethod = player.getClass().getMethod("isLive");
+            Method setPauseModeMethod = player.getClass().getMethod("setPauseMode", boolean.class);
+            Method isSeekAbleMethod = player.getClass().getMethod("isSeekAble");
+            Method getTimeMethod = player.getClass().getMethod("getTime");
+            Method getMediaInfoDurationMethod = player.getClass().getMethod("getMediaInfoDuration");
+            Method seekToMethod = player.getClass().getMethod("seekTo", long.class);
 
-            boolean currentPlaying = playing && !Minecraft.getInstance().isPaused();
+            boolean isSafeUse = (Boolean) isSafeUseMethod.invoke(player);
+            boolean isValid = (Boolean) isValidMethod.invoke(player);
 
-            player.setPauseMode(!currentPlaying);
-            if (!stream && player.isSeekAble()) {
-                long time = MathAPI.tickToMs(tick);
-                if (time > player.getTime()) time = floorMod(time, player.getMediaInfoDuration());
+            if (isSafeUse && isValid) {
+                boolean isLive = (Boolean) isLiveMethod.invoke(player);
+                if (!stream && isLive) stream = true;
 
-                if (Math.abs(time - player.getTime()) > ACCEPTABLE_SYNC_TIME && Math.abs(time - lastCorrectedTime) > ACCEPTABLE_SYNC_TIME) {
-                    lastCorrectedTime = time;
-                    player.seekTo(time);
+                boolean currentPlaying = playing && !Minecraft.getInstance().isPaused();
+                setPauseModeMethod.invoke(player, !currentPlaying);
+
+                if (!stream && (Boolean) isSeekAbleMethod.invoke(player)) {
+                    long time = MathAPI.msToTick(tick);
+                    long playerTime = (Long) getTimeMethod.invoke(player);
+
+                    if (time > playerTime) {
+                        long mediaDuration = (Long) getMediaInfoDurationMethod.invoke(player);
+                        time = floorMod(time, mediaDuration);
+                    }
+
+                    if (Math.abs(time - playerTime) > ACCEPTABLE_SYNC_TIME && Math.abs(time - lastCorrectedTime) > ACCEPTABLE_SYNC_TIME) {
+                        lastCorrectedTime = time;
+                        seekToMethod.invoke(player, time);
+                    }
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -140,12 +199,34 @@ public class VideoDisplayer implements IDisplay {
 
     @Override
     public boolean isPlaying() {
-        return player.isPlaying() || player.isPaused();
+        try {
+            Method isPlayingMethod = player.getClass().getMethod("isPlaying");
+            Method isPausedMethod = player.getClass().getMethod("isPaused");
+
+            boolean isPlaying = (Boolean) isPlayingMethod.invoke(player);
+            boolean isPaused = (Boolean) isPausedMethod.invoke(player);
+
+            return isPlaying || isPaused;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public boolean isStopped() {
-        return player.isStopped() || player.isEnded();
+        try {
+            Method isStoppedMethod = player.getClass().getMethod("isStopped");
+            Method isEndedMethod = player.getClass().getMethod("isEnded");
+
+            boolean isStopped = (Boolean) isStoppedMethod.invoke(player);
+            boolean isEnded = (Boolean) isEndedMethod.invoke(player);
+
+            return isStopped || isEnded;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
     }
 
     @Override
@@ -157,23 +238,41 @@ public class VideoDisplayer implements IDisplay {
     public int prepare(String url, boolean playing, boolean loop, int tick) {
         if (player == null) return -1;
         this.url = url;
-        if (player instanceof SyncVideoPlayer)
-            return ((SyncVideoPlayer) player).getGlTexture();
 
-        return 0;
+        // Try to get GL texture using reflection
+        try {
+            Method getGlTextureMethod = player.getClass().getMethod("getGlTexture");
+            Object result = getGlTextureMethod.invoke(player);
+            return result instanceof Integer ? (Integer) result : 0;
+        } catch (Exception e) {
+            // Method doesn't exist or failed, return 0
+            return 0;
+        }
     }
 
     @Override
     public int getRenderTexture() {
-        if (player instanceof SyncVideoPlayer)
-            return ((SyncVideoPlayer) player).getGlTexture();
+        if (player == null) return 0;
 
-        return 0;
+        // Try to get GL texture using reflection
+        try {
+            Method getGlTextureMethod = player.getClass().getMethod("getGlTexture");
+            Object result = getGlTextureMethod.invoke(player);
+            return result instanceof Integer ? (Integer) result : 0;
+        } catch (Exception e) {
+            // Method doesn't exist or failed, return 0
+            return 0;
+        }
     }
 
     public void free() {
         if (player != null) {
-            player.release();
+            try {
+                Method releaseMethod = player.getClass().getMethod("release");
+                releaseMethod.invoke(player);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             player = null;
         }
     }
@@ -189,31 +288,56 @@ public class VideoDisplayer implements IDisplay {
     @Override
     public void stop() {
         if (player == null) return;
-        player.stop();
+        try {
+            Method stopMethod = player.getClass().getMethod("stop");
+            stopMethod.invoke(player);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void pause(int tick) {
         if (player == null) return;
-        if (tick != -1)
-            player.seekTo(tick);
-        player.pause();
+        try {
+            if (tick != -1) {
+                Method seekToMethod = player.getClass().getMethod("seekTo", int.class);
+                seekToMethod.invoke(player, tick);
+            }
+            Method pauseMethod = player.getClass().getMethod("pause");
+            pauseMethod.invoke(player);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void resume(int tick) {
         if (player == null) return;
-        if (tick != -1)
-            player.seekTo(tick);
-        player.play();
+        try {
+            if (tick != -1) {
+                Method seekToMethod = player.getClass().getMethod("seekTo", int.class);
+                seekToMethod.invoke(player, tick);
+            }
+            Method playMethod = player.getClass().getMethod("play");
+            playMethod.invoke(player);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public Dimension getDimensions() {
         if (player == null) return null;
-        if (player instanceof SyncVideoPlayer)
-            return ((SyncVideoPlayer) player).getDimensions();
 
-        return null;
+        // Try to get dimensions using reflection
+        try {
+            Method getDimensionsMethod = player.getClass().getMethod("getDimensions");
+            Object result = getDimensionsMethod.invoke(player);
+            return result instanceof Dimension ? (Dimension) result : null;
+        } catch (Exception e) {
+            // Method doesn't exist or failed, return null
+            return null;
+        }
     }
 }

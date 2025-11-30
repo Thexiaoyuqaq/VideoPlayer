@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class RadioMessage {
 
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "radio");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "radio");
 
     public static void receive(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender sender) {
         String url = buf.readUtf();

@@ -70,10 +70,11 @@ public class TVBlock extends Block implements EntityBlock {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @Override
-    public boolean isPossibleToRespawnInThis(BlockState state) {
-        return false;
-    }
+    // 移除isPossibleToRespawnInThis方法，因为在1.20.6中已经不存在
+    // @Override
+    // public boolean isPossibleToRespawnInThis(BlockState state) {
+    //     return false;
+    // }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -85,8 +86,9 @@ public class TVBlock extends Block implements EntityBlock {
         return true;
     }
 
+    // 修复：将use方法改为useWithoutItem
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (!world.isClientSide) {
             if (blockEntity instanceof TVBlockEntity tvBlockEntity) {
