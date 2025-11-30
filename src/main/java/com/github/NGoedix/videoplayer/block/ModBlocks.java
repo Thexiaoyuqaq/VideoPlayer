@@ -4,7 +4,6 @@ import com.github.NGoedix.videoplayer.Reference;
 import com.github.NGoedix.videoplayer.VideoPlayer;
 import com.github.NGoedix.videoplayer.block.custom.RadioBlock;
 import com.github.NGoedix.videoplayer.block.custom.TVBlock;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -22,11 +21,23 @@ import java.util.function.ToIntFunction;
 
 public class ModBlocks {
     public static final Block TV_BLOCK = registerBlock("tv_block",
-            new TVBlock(BlockBehaviour.Properties.of().pushReaction(PushReaction.DESTROY).noOcclusion().requiresCorrectToolForDrops().sound(SoundType.METAL).lightLevel(litBlockEmission(12)).strength(3.5F, 6.0F)),
+            new TVBlock(BlockBehaviour.Properties.of()
+                    .pushReaction(PushReaction.DESTROY)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)
+                    .lightLevel(litBlockEmission(12))
+                    .strength(3.5F, 6.0F)),
             VideoPlayer.VIDEO_PLAYER_TAB);
 
     public static final Block RADIO_BLOCK = registerBlock("radio_block",
-            new RadioBlock(BlockBehaviour.Properties.of().pushReaction(PushReaction.DESTROY).noOcclusion().requiresCorrectToolForDrops().sound(SoundType.METAL).lightLevel(litBlockEmission(12)).strength(3.5F, 6.0F)),
+            new RadioBlock(BlockBehaviour.Properties.of()
+                    .pushReaction(PushReaction.DESTROY)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops()
+                    .sound(SoundType.METAL)
+                    .lightLevel(litBlockEmission(12))
+                    .strength(3.5F, 6.0F)),
             VideoPlayer.VIDEO_PLAYER_TAB);
 
     private static Block registerBlockWithoutBlockItem(String name, Block block, CreativeModeTab group) {
@@ -44,7 +55,7 @@ public class ModBlocks {
 
     private static Item registerBlockItem(String name, Block block, CreativeModeTab group) {
         return Registry.register(BuiltInRegistries.ITEM, new ResourceLocation(Reference.MOD_ID, name),
-                new BlockItem(block, new FabricItemSettings()));
+                new BlockItem(block, new Item.Properties()));
     }
 
     public static void registerModBlocks() {

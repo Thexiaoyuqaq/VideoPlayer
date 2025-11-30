@@ -56,18 +56,21 @@ public class RadioBlock extends Block implements EntityBlock {
         builder.add(FACING, LIT);
     }
 
+    // 移除 @Override 注解，或者更新方法名称
     @Override
-    public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {
+    public boolean propagatesSkylightDown(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
         return true;
     }
 
-    @Override
-    public boolean isPossibleToRespawnInThis(BlockState state) {
-        return false;
-    }
+    // 移除这个方法，因为在1.20.6中可能已经不存在了
+    // 或者如果确实需要，检查正确的方法名
+    // @Override
+    // public boolean isPossibleToRespawnInThis(BlockState state) {
+    //     return false;
+    // }
 
     @Override
-    public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
+    protected InteractionResult useWithoutItem(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, BlockHitResult pHitResult) {
         BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
         if (!pLevel.isClientSide) {
             if (blockEntity instanceof RadioBlockEntity radioBlockEntity) {

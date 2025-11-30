@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class VideoPlayer implements ModInitializer {
 
+
     public static final CreativeModeTab VIDEO_PLAYER_TAB = Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, new ResourceLocation("tab"), FabricItemGroup.builder().title(Component.translatable("itemGroup.videoplayer.items"))
             .icon(() -> new ItemStack(ModBlocks.TV_BLOCK)).displayItems((displayContext, entries) -> {
                 entries.accept(new ItemStack(ModBlocks.TV_BLOCK));
@@ -33,6 +34,7 @@ public class VideoPlayer implements ModInitializer {
         ModBlockEntities.registerAllBlockEntities();
         ArgumentTypeRegistry.registerArgumentType(new ResourceLocation(Reference.MOD_ID, "symbol_string"), SymbolStringArgumentType.class, new SymbolStringArgumentSerializer());
 
+        PacketHandler.registerPayloadTypes();
         PacketHandler.registerC2SPackets();
 
         CommandRegistrationCallback.EVENT.register(PlayVideoCommand::register);
@@ -41,4 +43,5 @@ public class VideoPlayer implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(PlayMusicCommand::register);
         CommandRegistrationCallback.EVENT.register(StopMusicCommand::register);
     }
+
 }

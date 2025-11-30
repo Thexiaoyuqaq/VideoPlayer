@@ -6,9 +6,13 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class CustomSlider extends AbstractSliderButton {
+
+    // 手动定义WIDGETS_LOCATION，如果AbstractWidget中没有的话
+    private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
 
     public interface OnSlide {
         void onSlide(double value);
@@ -49,7 +53,7 @@ public class CustomSlider extends AbstractSliderButton {
         Minecraft minecraft = Minecraft.getInstance();
         Font fontrenderer = minecraft.font;
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-        RenderSystem._setShaderTexture(0, WIDGETS_LOCATION);
+        RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
         int i = 0;
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
@@ -69,7 +73,7 @@ public class CustomSlider extends AbstractSliderButton {
     }
 
     protected void renderBg(GuiGraphics guiGraphics, Minecraft pMinecraft, int pMouseX, int pMouseY) {
-        RenderSystem._setShaderTexture(0, WIDGETS_LOCATION);
+        RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         int i = (this.isHovered ? 2 : 1) * 20;
 

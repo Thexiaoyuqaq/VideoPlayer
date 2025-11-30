@@ -9,10 +9,7 @@ import com.github.NGoedix.videoplayer.util.displayers.VideoDisplayer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import me.srrapero720.watermedia.api.image.ImageAPI;
-import me.srrapero720.watermedia.api.image.ImageRenderer;
-import me.srrapero720.watermedia.api.math.MathAPI;
-import me.srrapero720.watermedia.api.player.SyncVideoPlayer;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,6 +19,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
+import org.watermedia.api.image.ImageAPI;
+import org.watermedia.api.image.ImageRenderer;
+import org.watermedia.api.math.MathAPI;
+import org.watermedia.api.player.videolan.VideoPlayer;
+import org.watermedia.api.player.videolan.BasePlayer;
 
 import java.awt.*;
 
@@ -154,7 +156,7 @@ public class TVVideoScreen extends Screen {
         timeSlider.setOnSlideListener(value -> {
             if (be.requestDisplay() == null) return;
             if (be.requestDisplay() instanceof VideoDisplayer) {
-                SyncVideoPlayer player = (SyncVideoPlayer) ((VideoDisplayer) be.requestDisplay()).player;
+                BasePlayer player = ((VideoDisplayer) be.requestDisplay()).player;
                 if (player.isReady() && !player.isLive()) {
                     player.seekTo((int) ((value / 100D) * player.getDuration()));
                 }
@@ -163,7 +165,7 @@ public class TVVideoScreen extends Screen {
         });
 
         if (be.requestDisplay() != null && be.requestDisplay() instanceof VideoDisplayer) {
-            SyncVideoPlayer player = (SyncVideoPlayer) ((VideoDisplayer) be.requestDisplay()).player;
+            BasePlayer player =((VideoDisplayer) be.requestDisplay()).player;
             timeSlider.setValue((double) player.getTime() / player.getDuration());
         }
 
@@ -181,10 +183,11 @@ public class TVVideoScreen extends Screen {
 
     @Override
     public void render(GuiGraphics context, int pMouseX, int pMouseY, float pPartialTick) {
-        renderBackground(context);
+        // 修复：添加缺少的参数
+        renderBackground(context, pMouseX, pMouseY, pPartialTick);
         RenderSystem.clearColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, TEXTURE);
-        context.blit(TEXTURE, leftPos, topPos, 320, 320, 0, 0, imageWidth, imageHeight, imageWidth, imageHeight);
+        context.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
         // Draw black square
         GlStateManager._bindTexture(ImageAPI.blackPicture().texture(0));
@@ -198,7 +201,7 @@ public class TVVideoScreen extends Screen {
         String actualTimeFormatted = "00:00";
 
         if (be.requestDisplay() instanceof VideoDisplayer) {
-            SyncVideoPlayer player = (SyncVideoPlayer) ((VideoDisplayer) be.requestDisplay()).player;
+            BasePlayer player = (BasePlayer) ((VideoDisplayer) be.requestDisplay()).player;
 
             if (player != null && player.isReady()) {
                 timeSlider.setActive(!player.isLive());
@@ -212,7 +215,7 @@ public class TVVideoScreen extends Screen {
                 long maxMinute = durationSeconds / 60;
                 long maxSeconds = durationSeconds % 60;
 
-                long actualTime = MathAPI.tickToMs(be.getTick()) / 1000;
+                long actualTime = MathAPI.msToTick(be.getTick()) / 1000;
                 long actualMinute = actualTime / 60;
                 long actualSeconds = actualTime % 60;
 
